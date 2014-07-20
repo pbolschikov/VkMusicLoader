@@ -135,6 +135,7 @@ public class LoginActivity extends Activity {
     View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
+        	
         	Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://oauth.vk.com/authorize?client_id=3711445&scope=audio&redirect_uri=http://oauth.vk.com/blank.html&response_type=token&display=page"));
         	startActivity(browserIntent);
             if (AUTO_HIDE) {
