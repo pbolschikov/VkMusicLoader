@@ -15,7 +15,7 @@
         android:theme="@style/AppTheme" 
         android:debuggable="true">
         <activity
-            android:name="com.home.vkmusicloader.LoginActivity"
+            android:name="com.home.vkmusicloader.MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"
             android:theme="@style/FullscreenTheme" >
@@ -26,5 +26,5 @@
             </intent-filter>
         </activity>
     </application>
-
+	<uses-permission android:name="android.permission.INTERNET"/>
 </manifest>

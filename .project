@@ -3,6 +3,7 @@
 	<name>VkMusicLoader</name>
 	<comment></comment>
 	<projects>
+		<project>VKOpenAuthActivity</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
