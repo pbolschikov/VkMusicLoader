@@ -31,9 +31,9 @@ public class CustomVKSdkListener extends VKSdkListener {
 
         @Override
         public void onAccessDenied(final VKError authorizationError) {
-        	//new AlertDialog.Builder(VKUIHelper.getTopActivity())
-            //        .setMessage(authorizationError.toString())
-            //        .show();
+        	new AlertDialog.Builder(VKUIHelper.getTopActivity())
+                    .setMessage(authorizationError.toString())
+                    .show();
         }
 
         @Override
