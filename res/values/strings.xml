@@ -2,7 +2,9 @@
 <resources>
 
     <string name="app_name">VK Music Player</string>
-    <string name="dummy_button">Enter</string>
     <string name="dummy_content">VK Music Player</string>
-
+	<string name="vk_app_id">4468814</string>
+	<string name="sign_in_button">Sign In</string>
+	<string name="sign_out_button">Sign Out</string>
+	<string name="continue_button">Continue</string>
 </resources>
