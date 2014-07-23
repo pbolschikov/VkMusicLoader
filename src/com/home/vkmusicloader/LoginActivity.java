@@ -69,6 +69,6 @@ public class LoginActivity extends FragmentActivity implements ILoginActivity {
     private final VKSdkListener sdkListener = new CustomVKSdkListener();
     
     public void showMainActivity() {
-	    //startActivity(new Intent(this, TestActivity.class));
+    	startActivity(new Intent(this, MainActivity.class));
     }
 }
