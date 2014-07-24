@@ -1,5 +1,7 @@
 package com.home.vkmusicloader;
 
+import roboguice.activity.RoboFragmentActivity;
+import roboguice.inject.ContentView;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -11,15 +13,11 @@ import com.vk.sdk.VKUIHelper;
 import com.vk.sdk.util.VKUtil;
 
 
-/**
- * Activity which displays a login screen to the user, offering registration as
- * well.
- */
-public class LoginActivity extends FragmentActivity implements ILoginActivity {
+@ContentView(R.layout.activity_login)
+public class LoginActivity extends RoboFragmentActivity implements ILoginActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
         VKUIHelper.onCreate(this);
         VKSdk.initialize(sdkListener, getString(R.string.vk_app_id));
         if (VKSdk.wakeUpSession()) {
@@ -66,7 +64,7 @@ public class LoginActivity extends FragmentActivity implements ILoginActivity {
         VKUIHelper.onActivityResult(this, requestCode, resultCode, data);
     }
 
-    private final VKSdkListener sdkListener = new CustomVKSdkListener();
+    private final VKSdkListener sdkListener = new CustomVKSdkListener(this);
     
     public void showMainActivity() {
     	startActivity(new Intent(this, MainActivity.class));

@@ -11,12 +11,20 @@ import com.vk.sdk.VKUIHelper;
 import com.vk.sdk.api.VKError;
 
 public class CustomVKSdkListener extends VKSdkListener {
-		
+	
+	private final ILoginActivity mLoginActivity;
+	
+	public CustomVKSdkListener(ILoginActivity loginActivity)
+	{
+		mLoginActivity = loginActivity;
+	}
+	
 	public static final String[] sMyScope = new String[] {
         VKScope.FRIENDS,
         VKScope.WALL,
         VKScope.PHOTOS,
-        VKScope.NOHTTPS
+        VKScope.NOHTTPS,
+        VKScope.AUDIO
 };
 	
 	    @Override
@@ -38,12 +46,12 @@ public class CustomVKSdkListener extends VKSdkListener {
 
         @Override
         public void onReceiveNewToken(VKAccessToken newToken) {
-            //startestActivity();
+        	mLoginActivity.showMainActivity();
         }
 
         @Override
         public void onAcceptUserToken(VKAccessToken token) {
-            //startTestActivity();
+        	mLoginActivity.showMainActivity();
         }
 }
 

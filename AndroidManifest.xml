@@ -15,7 +15,7 @@
         android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
         <activity android:name="com.vk.sdk.VKOpenAuthActivity" />
         <activity android:windowSoftInputMode="adjustPan"
-            android:noHistory="true"
+            
              android:name=".LoginActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
