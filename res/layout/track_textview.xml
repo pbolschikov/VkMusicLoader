@@ -1,32 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent" android:layout_height="fill_parent"
-    android:orientation="vertical">
+    android:background="#3b3b3b">	
     <TextView
         android:id="@+id/track_title"
-    android:layout_width="match_parent"
+        android:layout_alignParentLeft="true"
+    android:layout_width="0dp"
     android:layout_height="wrap_content"
-    android:background="#3b3b3b"
-	android:paddingTop="10dp"
-	android:paddingBottom="10dp"
+    android:paddingTop="5dp"
+	android:paddingBottom="2dp"
 	android:paddingLeft="3dp"
 	android:paddingRight="3dp"
 	android:textSize="25sp"
-	android:textColor="@color/vk_white">
-   
+	android:layout_toLeftOf="@+id/play_button"
+	android:textColor="@color/vk_white"
+	android:ellipsize="end"
+	android:singleLine="true">
 </TextView>
 
 <TextView
     android:id="@+id/track_artist"
-    android:layout_width="match_parent"
+    android:ellipsize="end"
+	android:singleLine="true"
+    android:layout_width="0dp"
+    android:layout_alignParentLeft="true"
     android:layout_height="wrap_content"
-    android:background="#3b3b3b"
-	android:paddingTop="10dp"
-	android:paddingBottom="10dp"
+    android:layout_toLeftOf="@id/play_button"
+    android:layout_below="@id/track_title"
+    android:paddingTop="2dp"
+	android:paddingBottom="5dp"
 	android:paddingLeft="3dp"
 	android:paddingRight="3dp"
 	android:textSize="15sp"
 	android:textColor="@color/vk_white">
-   
 </TextView>
-    </LinearLayout>
+<Button 
+    android:layout_marginTop="10dp"
+    android:layout_marginBottom="10dp"
+    android:layout_marginRight="5dp"
+    android:layout_marginLeft="10dp"
+    android:background="@drawable/button_play"
+    android:layout_toLeftOf="@+id/download_button"
+    android:layout_centerVertical="true"
+    android:id="@id/play_button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"/>
+<Button 
+    android:layout_marginTop="10dp"
+    android:layout_marginBottom="10dp"
+    android:layout_marginRight="10dp"
+    android:layout_marginLeft="5dp"
+    android:background="@drawable/button_download"
+    android:layout_alignParentRight="true"
+    android:layout_centerVertical="true"
+    android:id="@+id/download_button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"/>
+</RelativeLayout>

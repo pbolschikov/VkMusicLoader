@@ -6,7 +6,10 @@
         res/values-v11/styles.xml on API 14+ devices.
     -->
     <style name="AppBaseTheme" parent="@android:style/Theme.Black.NoTitleBar.Fullscreen">
-        <!-- API 14 theme customizations can go here. -->
+            <item name="android:textViewStyle">@style/RobotoTextViewStyle</item>
     </style>
 
+<style name="RobotoTextViewStyle" parent="android:Widget.TextView">
+    <item name="android:fontFamily">sans-serif-condensed</item>
+</style>
 </resources>
