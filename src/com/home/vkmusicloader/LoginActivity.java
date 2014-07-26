@@ -4,7 +4,6 @@ import roboguice.activity.RoboFragmentActivity;
 import roboguice.inject.ContentView;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
 import com.vk.sdk.VKSdk;
