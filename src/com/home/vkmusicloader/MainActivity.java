@@ -25,11 +25,19 @@ public class MainActivity extends RoboActivity implements IMainActivity
 	MediaPlayer m_Player;
 	final List<TrackInfo> m_Tracks = new ArrayList<TrackInfo>();
 	TrackInfoAdapter m_TracksAdapter;
+	TrackInfo m_LastTrack;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         m_Player = new MediaPlayer();
+        m_Player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+			
+			@Override
+			public void onPrepared(MediaPlayer mp) {
+				mp.start();
+							}
+		});
         m_TracksAdapter = new TrackInfoAdapter(this, R.layout.track_textview, m_Tracks);
         VKApiAudio audioApi = VKApi.audio();
         m_TrackListView.setAdapter(m_TracksAdapter);
@@ -53,30 +61,37 @@ public class MainActivity extends RoboActivity implements IMainActivity
 		{
 			return;
 		}
-		for (TrackInfo localTrackInfo: m_Tracks)
+		if (m_LastTrack != trackInfo)
 		{
-			localTrackInfo.setIsPlaying(false);
+			if (m_LastTrack != null)
+			{
+				m_LastTrack.setIsPlaying(false);
+			}
+			m_Player.reset();
+			try {
+				m_Player.setDataSource(trackInfo.getUrl());
+				
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+				return;
+			} catch (SecurityException e) {
+				e.printStackTrace();
+				return;
+			} catch (IllegalStateException e) {
+				e.printStackTrace();
+				return;
+			} catch (IOException e) {
+				e.printStackTrace();
+				return;
+			}	
+			m_Player.prepareAsync();
+		}
+		else{
+			m_Player.start();
 		}
 		trackInfo.setIsPlaying(true);
+		m_LastTrack = trackInfo;
 		m_TracksAdapter.notifyDataSetChanged();
-		try {
-			m_Player.reset();
-			m_Player.setDataSource(trackInfo.getUrl());
-			m_Player.prepare();
-			m_Player.start();
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	@Override
