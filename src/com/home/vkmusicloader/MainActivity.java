@@ -1,5 +1,6 @@
 package com.home.vkmusicloader;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,11 +8,15 @@ import java.util.List;
 import roboguice.activity.RoboActivity;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Environment;
 import android.widget.ListView;
 
 import com.home.vkmusicloader.model.TrackInfo;
+import com.home.vkmusicloader.services.DownloadData;
+import com.home.vkmusicloader.services.DownloadTrackService;
 import com.vk.sdk.api.VKApi;
 import com.vk.sdk.api.VKRequest.VKRequestListener;
 import com.vk.sdk.api.methods.VKApiAudio;
@@ -102,6 +107,30 @@ public class MainActivity extends RoboActivity implements IMainActivity
 			trackInfo.setIsPlaying(false);
 			m_TracksAdapter.notifyDataSetChanged();
 		}
+	}
+
+	@Override
+	public void downloadTrack(TrackInfo trackInfo) {
+		//TODO check if media mounted http://developer.android.com/training/basics/data-storage/files.html
+		
+		File artistDirectory = new File(Environment.getExternalStoragePublicDirectory(
+	            Environment.DIRECTORY_PICTURES), trackInfo.getArtist());
+		if (!artistDirectory.mkdirs())
+		{
+			//TODO notify activity that directory can not be created
+			return;
+		}
+		File file = new File(artistDirectory, trackInfo.getTitle() + ".mp3");
+		try {
+			file.createNewFile();
+		} catch (IOException e) {
+			return;
+		}
+		
+		DownloadData data = new DownloadData(0, trackInfo.getUrl(), file);
+		Intent intent = new Intent(this, DownloadTrackService.class);
+		intent.putExtra(DownloadTrackService.ExtraName, data);		
+		startService(intent);
 	}
     
     
