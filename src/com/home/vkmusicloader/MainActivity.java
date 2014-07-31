@@ -115,7 +115,7 @@ public class MainActivity extends RoboActivity implements IMainActivity
 		
 		File artistDirectory = new File(Environment.getExternalStoragePublicDirectory(
 	            Environment.DIRECTORY_PICTURES), trackInfo.getArtist());
-		if (!artistDirectory.mkdirs())
+		if (!artistDirectory.exists() && !artistDirectory.mkdirs())
 		{
 			//TODO notify activity that directory can not be created
 			return;

@@ -57,7 +57,7 @@ public class DownloadTrackService extends IntentService {
 		    	 builder.setProgress(size, total, false);
                  // Displays the progress bar for the first time.
                  notifyManager.notify(m_NotificationId, builder.build());
-		    	 if (bytesRead == 0)
+		    	 if (bytesRead <= 0)
 		    	 {
 		    		 break;
 		    	 }
@@ -72,7 +72,7 @@ public class DownloadTrackService extends IntentService {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		   }
-		    finally {
+		   finally {
 		    safeClose(in);
 		    safeClose(fos);
 		    if (urlConnection != null)

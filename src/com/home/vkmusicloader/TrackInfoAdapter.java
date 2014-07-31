@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -38,7 +37,7 @@ public class TrackInfoAdapter extends ArrayAdapter<TrackInfo>
         TextView artist =(TextView)trackView.findViewById(R.id.track_artist);
         TextView title =(TextView)trackView.findViewById(R.id.track_title);
         ToggleButton playButton = (ToggleButton)trackView.findViewById(R.id.play_button);
-        Button downloadButton = (Button)trackView.findViewById(R.id.download_button);
+        View downloadButton = trackView.findViewById(R.id.download_button);
         downloadButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {

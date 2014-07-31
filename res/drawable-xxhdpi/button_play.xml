@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android" >
-<item android:drawable="@drawable/play_unchecking" android:state_checked="true" android:state_pressed="true" />
-    <item android:drawable="@drawable/play_checking" android:state_pressed="true" />
-    <item android:drawable="@drawable/play_checked" android:state_checked="true" />
-    <item android:drawable="@drawable/play_default"/>
+<item android:state_checked="true" android:state_pressed="true" >
+    <bitmap android:gravity="center" android:src="@drawable/play_unchecking"/>
+</item>
+    <item android:state_pressed="true" >
+        <bitmap android:gravity="center" android:src="@drawable/play_checking"/>
+    </item>
+    <item android:state_checked="true" >
+        <bitmap android:gravity="center" android:src="@drawable/play_checked"/>
+    </item>
+    <item>
+        <bitmap android:gravity="center" android:src="@drawable/play_default"/>
+    </item>
 </selector>
