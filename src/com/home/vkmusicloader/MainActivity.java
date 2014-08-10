@@ -46,8 +46,10 @@ public class MainActivity extends RoboActivity implements IMainActivity
         m_TracksAdapter = new TrackInfoAdapter(this, R.layout.track_textview, m_Tracks);
         VKApiAudio audioApi = VKApi.audio();
         m_TrackListView.setAdapter(m_TracksAdapter);
-        final VKRequestListener mRequestListener = new VKRequestListener(){
-        	@Override
+        @SuppressWarnings("serial")
+		final VKRequestListener mRequestListener = new VKRequestListener(){
+        	@SuppressWarnings("unchecked")
+			@Override
         	public void onComplete(com.vk.sdk.api.VKResponse response) {
         		for (VKApiAudioInfo vkTackInfo: (List<VKApiAudioInfo>)response.parsedModel)
         		{
@@ -127,7 +129,7 @@ public class MainActivity extends RoboActivity implements IMainActivity
 			return;
 		}
 		
-		DownloadData data = new DownloadData(0, trackInfo.getUrl(), file);
+		DownloadData data = new DownloadData(0, trackInfo.getUrl(), file, String.format("%s - %s", trackInfo.getArtist(), trackInfo.getTitle()));
 		Intent intent = new Intent(this, DownloadTrackService.class);
 		intent.putExtra(DownloadTrackService.ExtraName, data);		
 		startService(intent);

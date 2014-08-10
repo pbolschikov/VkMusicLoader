@@ -9,12 +9,14 @@ public class DownloadData implements Serializable {
 	private final int m_Id;
 	private final String m_Url;
 	private final File m_File;
+	private final String m_Title;
 	
-	public DownloadData(int id, String url, File file)
+	public DownloadData(int id, String url, File file, String title)
 	{
 		m_Id = id;
 		m_Url = url;
 		m_File = file;
+		m_Title = title;
 	}
 	
 	public String getUrl() {
@@ -26,5 +28,9 @@ public class DownloadData implements Serializable {
 
 	public File getFile() {
 		return m_File;
+	}
+
+	public String getTitle() {
+		return m_Title;
 	}
 }

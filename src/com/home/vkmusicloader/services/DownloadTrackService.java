@@ -11,11 +11,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import com.home.vkmusicloader.R;
+import com.home.vkmusicloader.data.VKDataOpenHelper;
 
 import android.app.IntentService;
 import android.app.NotificationManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.app.NotificationCompat;
 
 public class DownloadTrackService extends IntentService {
@@ -40,7 +43,7 @@ public class DownloadTrackService extends IntentService {
 		   FileOutputStream fos = null;
 		try
 		{
-			builder.setContentTitle("Download Track")
+			builder.setContentTitle(downloadData.getTitle())
 		    .setContentText("Download in progress").setSmallIcon(R.drawable.download_notification);
 			outputFile.createNewFile();
 		   URL url = new URL(downloadData.getUrl());
@@ -79,12 +82,18 @@ public class DownloadTrackService extends IntentService {
 		    {
 		    		urlConnection.disconnect();
 		    }
-		    builder.setContentText("Download complete")
+		    builder.setContentText("Download completed")
             // Removes the progress bar
                     .setProgress(0,0,false);
             notifyManager.notify(m_NotificationId, builder.build());
 		}
+		ContentValues values = new ContentValues();
+		values.put(VKDataOpenHelper.LOCATION_COLUMN, outputFile.getAbsolutePath());
+		VKDataOpenHelper dbHelper = new VKDataOpenHelper(this);
+		SQLiteDatabase sdb;
+		sdb = dbHelper.getWritableDatabase();
 		
+		sdb.update(VKDataOpenHelper.TRACK_TABLE, values, VKDataOpenHelper._ID + "=?"+downloadData.getId(), null);
 	}
 	
 	private static void safeClose(Closeable stream)
