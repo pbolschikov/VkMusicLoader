@@ -28,8 +28,7 @@ public class TrackInfoPersistor extends IntentService {
 			final VKRequestListener mRequestListener = new VKRequestListener(){
 	        	public void onComplete(com.vk.sdk.api.VKResponse response) {
         			VKDataOpenHelper dbHelper = new VKDataOpenHelper(getApplicationContext());
-        			SQLiteDatabase sdb;
-        			sdb = dbHelper.getWritableDatabase();
+        			SQLiteDatabase sdb = dbHelper.getWritableDatabase();
 	        		for (VKApiAudioInfo vkTackInfo: (List<VKApiAudioInfo>)response.parsedModel)
 	        		{
 	        			ContentValues values = new ContentValues();

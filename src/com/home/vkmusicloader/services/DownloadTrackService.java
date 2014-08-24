@@ -31,76 +31,87 @@ public class DownloadTrackService extends IntentService {
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		//TODO implement wi-fi lock
-		DownloadData downloadData = (DownloadData)intent.getSerializableExtra(ExtraName);
-		File outputFile = downloadData.getFile(); 
+		//TODO check if media mounted http://developer.android.com/training/basics/data-storage/files.html
 		
-		NotificationManager notifyManager =
-		        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-		NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-		
-		HttpURLConnection urlConnection = null;
-		   InputStream in = null;
-		   FileOutputStream fos = null;
-		try
-		{
-			builder.setContentTitle(downloadData.getTitle())
-		    .setContentText("Download in progress").setSmallIcon(R.drawable.download_notification);
-			outputFile.createNewFile();
-		   URL url = new URL(downloadData.getUrl());
-		   urlConnection = (HttpURLConnection) url.openConnection();
-		     in = new BufferedInputStream(urlConnection.getInputStream());
-		     int size =  urlConnection.getContentLength();
-		     fos = new FileOutputStream(outputFile, false);
-			int total = 0;
-		     byte[] buffer = new byte[8192];
-		     while (true)
-		     {
-		    	 int bytesRead = in.read(buffer);
-		    	 total += bytesRead;
-		    	 builder.setProgress(size, total, false);
-                 // Displays the progress bar for the first time.
-                 notifyManager.notify(m_NotificationId, builder.build());
-		    	 if (bytesRead <= 0)
-		    	 {
-		    		 break;
-		    	 }
-		    	 fos.write(buffer, 0, bytesRead);
-		     }
-		   }
-		   catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		   }
-		   catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		   }
-		   finally {
-		    safeClose(in);
-		    safeClose(fos);
-		    if (urlConnection != null)
-		    {
-		    		urlConnection.disconnect();
-		    }
-		    builder.setContentText("Download completed")
-            // Removes the progress bar
-                    .setProgress(0,0,false);
-            notifyManager.notify(m_NotificationId, builder.build());
-		}
-		try{
-			ContentValues values = new ContentValues();
-			values.put(VKDataOpenHelper.LOCATION_COLUMN, outputFile.getAbsolutePath());
-			VKDataOpenHelper dbHelper = new VKDataOpenHelper(this);
-			SQLiteDatabase sdb;
-			sdb = dbHelper.getWritableDatabase();
-			
-			sdb.update(VKDataOpenHelper.TRACK_TABLE, values, VKDataOpenHelper._ID + "=?",new String[]{ Integer.toString(downloadData.getId())});	
-		}
-		catch (Exception ex)
-		{
-			Exception e =ex;
-			String message = e.getMessage();
-		}
+//		File artistDirectory = new File(Environment.getExternalStoragePublicDirectory(
+//	            Environment.DIRECTORY_PICTURES), trackInfo.getArtist());
+//		if (!artistDirectory.exists() && !artistDirectory.mkdirs())
+//		{
+//			//TODO notify activity that directory can not be created
+//			return;
+//		}
+//		File file = new File(artistDirectory, trackInfo.getTitle() + ".mp3");
+//		try {
+//			file.createNewFile();
+//		} catch (IOException e) {
+//			return;
+//		}
+//
+//		
+//		DownloadData data = new DownloadData(0, trackInfo.getUrl(), file, String.format("%s - %s", trackInfo.getArtist(), trackInfo.getTitle()));
+//		
+//		DownloadData downloadData = (DownloadData)intent.getSerializableExtra(ExtraName);
+//		File outputFile = downloadData.getFile(); 
+//		
+//		NotificationManager notifyManager =
+//		        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+//		NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+//		
+//		HttpURLConnection urlConnection = null;
+//		   InputStream in = null;
+//		   FileOutputStream fos = null;
+//		try
+//		{
+//			builder.setContentTitle(downloadData.getTitle())
+//		    .setContentText("Download in progress").setSmallIcon(R.drawable.download_notification);
+//			outputFile.createNewFile();
+//		   URL url = new URL(downloadData.getUrl());
+//		   urlConnection = (HttpURLConnection) url.openConnection();
+//		     in = new BufferedInputStream(urlConnection.getInputStream());
+//		     int size =  urlConnection.getContentLength();
+//		     fos = new FileOutputStream(outputFile, false);
+//			int total = 0;
+//		     byte[] buffer = new byte[8192];
+//		     while (true)
+//		     {
+//		    	 int bytesRead = in.read(buffer);
+//		    	 total += bytesRead;
+//		    	 builder.setProgress(size, total, false);
+//                 // Displays the progress bar for the first time.
+//                 notifyManager.notify(m_NotificationId, builder.build());
+//		    	 if (bytesRead <= 0)
+//		    	 {
+//		    		 break;
+//		    	 }
+//		    	 fos.write(buffer, 0, bytesRead);
+//		     }
+//		   }
+//		   catch (MalformedURLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		   }
+//		   catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		   }
+//		   finally {
+//		    safeClose(in);
+//		    safeClose(fos);
+//		    if (urlConnection != null)
+//		    {
+//		    		urlConnection.disconnect();
+//		    }
+//		    builder.setContentText("Download completed")
+//            // Removes the progress bar
+//                    .setProgress(0,0,false);
+//            notifyManager.notify(m_NotificationId, builder.build());
+//		}
+//		ContentValues values = new ContentValues();
+//		values.put(VKDataOpenHelper.LOCATION_COLUMN, outputFile.getAbsolutePath());
+//		VKDataOpenHelper dbHelper = new VKDataOpenHelper(this);
+//		SQLiteDatabase sdb;
+//		sdb = dbHelper.getWritableDatabase();
+//		sdb.update(VKDataOpenHelper.TRACK_TABLE, values, VKDataOpenHelper._ID + "=?",new String[]{ Integer.toString(downloadData.getId())});	
 	}
 	
 	private static void safeClose(Closeable stream)

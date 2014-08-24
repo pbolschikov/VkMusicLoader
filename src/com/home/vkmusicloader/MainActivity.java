@@ -1,37 +1,36 @@
 package com.home.vkmusicloader;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import roboguice.activity.RoboActivity;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.os.Environment;
+import android.support.v4.widget.SimpleCursorAdapter;
+import android.support.v4.widget.SimpleCursorAdapter.ViewBinder;
+import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
-import com.home.vkmusicloader.model.TrackInfo;
-import com.home.vkmusicloader.services.DownloadData;
+import com.home.vkmusicloader.data.VKDataOpenHelper;
 import com.home.vkmusicloader.services.DownloadTrackService;
-import com.vk.sdk.api.VKApi;
-import com.vk.sdk.api.VKRequest.VKRequestListener;
-import com.vk.sdk.api.methods.VKApiAudio;
-import com.vk.sdk.api.model.VKApiAudioInfo;
+import com.home.vkmusicloader.services.TrackInfoPersistor;
 
 @ContentView(R.layout.activity_main)
-public class MainActivity extends RoboActivity implements IMainActivity
+public class MainActivity extends RoboActivity
 {
 	@InjectView(R.id.track_list)
 	ListView m_TrackListView;
 	MediaPlayer m_Player;
-	final List<TrackInfo> m_Tracks = new ArrayList<TrackInfo>();
-	TrackInfoAdapter m_TracksAdapter;
-	TrackInfo m_LastTrack;
+	SimpleCursorAdapter m_TracksAdapter;
+	private int m_CurrentTrackId;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,95 +43,98 @@ public class MainActivity extends RoboActivity implements IMainActivity
 				mp.start();
 							}
 		});
-        m_TracksAdapter = new TrackInfoAdapter(this, R.layout.track_textview, m_Tracks);
-        VKApiAudio audioApi = VKApi.audio();
-        m_TrackListView.setAdapter(m_TracksAdapter);
-        @SuppressWarnings("serial")
-		final VKRequestListener mRequestListener = new VKRequestListener(){
-        	@SuppressWarnings("unchecked")
+        Intent intent = new Intent(this, TrackInfoPersistor.class);
+		Toast.makeText(this, "Updating tracks", Toast.LENGTH_SHORT).show();
+		startService(intent);
+		
+		VKDataOpenHelper dbHelper = new VKDataOpenHelper(this);
+        SQLiteDatabase sdb = dbHelper.getReadableDatabase();
+		Cursor tracksCursor = sdb.query(VKDataOpenHelper.TRACK_TABLE, new String[]{ VKDataOpenHelper._ID,VKDataOpenHelper.ARTIST_COLUMN ,VKDataOpenHelper.TITLE_COLUMN }, null, null, null, null, null);
+		
+		m_TracksAdapter = new SimpleCursorAdapter(this, R.layout.track_textview, tracksCursor, new String[0], new int[0], 0);
+		m_TracksAdapter.setViewBinder(new ViewBinder(){
+
 			@Override
-        	public void onComplete(com.vk.sdk.api.VKResponse response) {
-        		for (VKApiAudioInfo vkTackInfo: (List<VKApiAudioInfo>)response.parsedModel)
-        		{
-        			m_Tracks.add(new TrackInfo(vkTackInfo.title, vkTackInfo.artist, vkTackInfo.url));
-        		}
-        		m_TracksAdapter.notifyDataSetChanged();
-        	}
-        };  
-        
-        audioApi.get().executeWithListener(mRequestListener);
+			public boolean setViewValue(View trackView, Cursor cursor, int index) {
+		        
+		        TextView artist =(TextView)trackView.findViewById(R.id.track_artist);
+		        TextView title =(TextView)trackView.findViewById(R.id.track_title);
+		        ToggleButton playButton = (ToggleButton)trackView.findViewById(R.id.play_button);
+		        View downloadButton = trackView.findViewById(R.id.download_button);
+		        final int trackId = cursor.getInt(cursor.getColumnIndex(VKDataOpenHelper._ID));
+		        downloadButton.setOnClickListener(new View.OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						downloadTrack(trackId);
+					}
+				});
+		        playButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+					
+					@Override
+					public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+						if (isChecked)
+						{
+							play(trackId);
+						}
+						else
+						{
+							pause(trackId);
+						}
+					}
+				});
+		        playButton.setChecked(trackId == m_CurrentTrackId && m_Player.isPlaying());
+		        title.setText(cursor.getString(2));
+		        artist.setText(cursor.getString(1));
+				return true;
+			}
+        	
+        });
     }
 
-	@Override
-	public void play(TrackInfo trackInfo) {
-		if (trackInfo.getIsPlaying())
+	public void play(int trackId) {
+		if (m_CurrentTrackId == trackId)
 		{
+			if (m_Player.isPlaying())
+			{
+				m_Player.start();
+			}
 			return;
 		}
-		if (m_LastTrack != trackInfo)
-		{
-			if (m_LastTrack != null)
-			{
-				m_LastTrack.setIsPlaying(false);
-			}
-			m_Player.reset();
-			try {
-				m_Player.setDataSource(trackInfo.getUrl());
-				
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-				return;
-			} catch (SecurityException e) {
-				e.printStackTrace();
-				return;
-			} catch (IllegalStateException e) {
-				e.printStackTrace();
-				return;
-			} catch (IOException e) {
-				e.printStackTrace();
-				return;
-			}	
-			m_Player.prepareAsync();
-		}
-		else{
-			m_Player.start();
-		}
-		trackInfo.setIsPlaying(true);
-		m_LastTrack = trackInfo;
+		VKDataOpenHelper dbHelper = new VKDataOpenHelper(this);
+        SQLiteDatabase sdb = dbHelper.getReadableDatabase();
+		
+		Cursor tracksCursor = sdb.query(VKDataOpenHelper.TRACK_TABLE, 
+				new String[]{ VKDataOpenHelper.URL_COLUMN }, "id=?", new String[]{Integer.toString(trackId)}, null, null, null);
+		String url = tracksCursor.getString(0);
+		tracksCursor.close();
+		m_Player.reset();
+		try {
+			m_Player.setDataSource(url);
+			
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+			return;
+		} catch (SecurityException e) {
+			e.printStackTrace();
+			return;
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+			return;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
+		}	
+		m_Player.prepareAsync();	
+	}
+
+	public void pause(int trackID) {
+		m_Player.pause();
 		m_TracksAdapter.notifyDataSetChanged();
 	}
-
-	@Override
-	public void pause(TrackInfo trackInfo) {
-		if (trackInfo.getIsPlaying())
-		{
-			m_Player.pause();
-			trackInfo.setIsPlaying(false);
-			m_TracksAdapter.notifyDataSetChanged();
-		}
-	}
-
-	@Override
-	public void downloadTrack(TrackInfo trackInfo) {
-		//TODO check if media mounted http://developer.android.com/training/basics/data-storage/files.html
-		
-		File artistDirectory = new File(Environment.getExternalStoragePublicDirectory(
-	            Environment.DIRECTORY_PICTURES), trackInfo.getArtist());
-		if (!artistDirectory.exists() && !artistDirectory.mkdirs())
-		{
-			//TODO notify activity that directory can not be created
-			return;
-		}
-		File file = new File(artistDirectory, trackInfo.getTitle() + ".mp3");
-		try {
-			file.createNewFile();
-		} catch (IOException e) {
-			return;
-		}
-		
-		DownloadData data = new DownloadData(0, trackInfo.getUrl(), file, String.format("%s - %s", trackInfo.getArtist(), trackInfo.getTitle()));
+	
+	public void downloadTrack(int trackId) {		
 		Intent intent = new Intent(this, DownloadTrackService.class);
-		intent.putExtra(DownloadTrackService.ExtraName, data);
+		intent.putExtra(DownloadTrackService.ExtraName, trackId);
 
 		Toast.makeText(this, "Downloading track", Toast.LENGTH_SHORT).show();
 		startService(intent);
