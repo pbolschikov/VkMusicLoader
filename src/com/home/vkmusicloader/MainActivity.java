@@ -13,6 +13,7 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.home.vkmusicloader.model.TrackInfo;
 import com.home.vkmusicloader.services.DownloadData;
@@ -131,7 +132,9 @@ public class MainActivity extends RoboActivity implements IMainActivity
 		
 		DownloadData data = new DownloadData(0, trackInfo.getUrl(), file, String.format("%s - %s", trackInfo.getArtist(), trackInfo.getTitle()));
 		Intent intent = new Intent(this, DownloadTrackService.class);
-		intent.putExtra(DownloadTrackService.ExtraName, data);		
+		intent.putExtra(DownloadTrackService.ExtraName, data);
+
+		Toast.makeText(this, "Downloading track", Toast.LENGTH_SHORT).show();
 		startService(intent);
 	}
     

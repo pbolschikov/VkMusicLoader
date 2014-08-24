@@ -7,7 +7,7 @@ import android.provider.BaseColumns;
 
 public class VKDataOpenHelper extends SQLiteOpenHelper implements BaseColumns {
 	
-	private static final int DATABASE_VERSION = 0;
+	private static final int DATABASE_VERSION = 1;
 	public static final String TITLE_COLUMN = "title";
 	public static final String ARTIST_COLUMN = "artist";
 	public static final String DURATION_COLUMN = "duration";

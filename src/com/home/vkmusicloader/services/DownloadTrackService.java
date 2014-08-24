@@ -87,13 +87,20 @@ public class DownloadTrackService extends IntentService {
                     .setProgress(0,0,false);
             notifyManager.notify(m_NotificationId, builder.build());
 		}
-		ContentValues values = new ContentValues();
-		values.put(VKDataOpenHelper.LOCATION_COLUMN, outputFile.getAbsolutePath());
-		VKDataOpenHelper dbHelper = new VKDataOpenHelper(this);
-		SQLiteDatabase sdb;
-		sdb = dbHelper.getWritableDatabase();
-		
-		sdb.update(VKDataOpenHelper.TRACK_TABLE, values, VKDataOpenHelper._ID + "=?"+downloadData.getId(), null);
+		try{
+			ContentValues values = new ContentValues();
+			values.put(VKDataOpenHelper.LOCATION_COLUMN, outputFile.getAbsolutePath());
+			VKDataOpenHelper dbHelper = new VKDataOpenHelper(this);
+			SQLiteDatabase sdb;
+			sdb = dbHelper.getWritableDatabase();
+			
+			sdb.update(VKDataOpenHelper.TRACK_TABLE, values, VKDataOpenHelper._ID + "=?",new String[]{ Integer.toString(downloadData.getId())});	
+		}
+		catch (Exception ex)
+		{
+			Exception e =ex;
+			String message = e.getMessage();
+		}
 	}
 	
 	private static void safeClose(Closeable stream)
