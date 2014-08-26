@@ -17,7 +17,7 @@ public class VKDataOpenHelper extends SQLiteOpenHelper implements BaseColumns {
 	
 	public static final String TRACK_TABLE_CREATE =  "CREATE TABLE " +TRACK_TABLE+" (" +
 		 	BaseColumns._ID +" INTEGER, " +TITLE_COLUMN +" TEXT, "+ARTIST_COLUMN+" TEXT, "+
-			DURATION_COLUMN+" INTEGER, "+LOCATION_COLUMN+" TEXT, "+URL_COLUMN+" TEXT);";
+			DURATION_COLUMN+" INTEGER, "+LOCATION_COLUMN+" TEXT, "+URL_COLUMN+" TEXT, UNIQUE(" + BaseColumns._ID +"));";
 	
 	public VKDataOpenHelper(Context context) {
 		super(context, "VKData", null, DATABASE_VERSION);
