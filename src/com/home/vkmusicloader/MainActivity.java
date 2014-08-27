@@ -15,7 +15,7 @@ import android.widget.Toast;
 
 import com.home.vkmusicloader.data.VKDataOpenHelper;
 import com.home.vkmusicloader.services.DownloadTrackService;
-import com.home.vkmusicloader.services.TrackInfoPersistor;
+import com.home.vkmusicloader.services.TrackInfoPersistorService;
 
 @ContentView(R.layout.activity_main)
 public class MainActivity extends RoboActivity
@@ -38,7 +38,7 @@ public class MainActivity extends RoboActivity
 				mp.start();
 							}
 		});
-        Intent intent = new Intent(this, TrackInfoPersistor.class);
+        Intent intent = new Intent(this, TrackInfoPersistorService.class);
 		Toast.makeText(this, "Updating tracks", Toast.LENGTH_SHORT).show();
 		startService(intent);
 		

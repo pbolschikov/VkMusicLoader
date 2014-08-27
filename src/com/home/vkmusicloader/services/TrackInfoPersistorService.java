@@ -14,7 +14,7 @@ import com.vk.sdk.api.VKRequest.VKRequestListener;
 import com.vk.sdk.api.methods.VKApiAudio;
 import com.vk.sdk.api.model.VKApiAudioInfo;
 
-public class TrackInfoPersistor extends Service {	
+public class TrackInfoPersistorService extends Service {	
 	@Override
     public void onCreate() {
         // The service is being created

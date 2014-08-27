@@ -33,7 +33,7 @@ public class DownloadTrackService extends IntentService {
 		//TODO implement wi-fi lock
 		//TODO check if media mounted http://developer.android.com/training/basics/data-storage/files.html
 		
-//		File artistDirectory = new File(Environment.getExternalStoragePublicDirectory(
+//		F-ile artistDirectory = new File(Environment.getExternalStoragePublicDirectory(
 //	            Environment.DIRECTORY_PICTURES), trackInfo.getArtist());
 //		if (!artistDirectory.exists() && !artistDirectory.mkdirs())
 //		{
