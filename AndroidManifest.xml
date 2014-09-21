@@ -17,6 +17,7 @@
         android:theme="@style/AppTheme">
         <service android:name="com.home.vkmusicloader.services.DownloadTrackService" />
         <service android:name="com.home.vkmusicloader.services.TrackInfoPersistorService" />
+        <service android:name="com.home.vkmusicloader.services.TrackPlayerService" />
         <activity android:name="com.vk.sdk.VKOpenAuthActivity" />
         <activity android:windowSoftInputMode="adjustPan"
             
