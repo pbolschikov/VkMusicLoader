@@ -61,6 +61,6 @@ public final class MainActivity extends RoboActivity
     {
     	VKDataOpenHelper dbHelper = new VKDataOpenHelper(this);
         SQLiteDatabase sdb = dbHelper.getReadableDatabase();
-        return sdb.query(VKDataOpenHelper.TRACK_TABLE, new String[]{ VKDataOpenHelper._ID,VKDataOpenHelper.ARTIST_COLUMN ,VKDataOpenHelper.TITLE_COLUMN }, null, null, null, null, null);
+        return sdb.rawQuery(VKDataOpenHelper.TRACKLIST_SELECT, new String[]{ Integer.toString(VKDataOpenHelper.DEFAULTTRACKLIST_ID) });
     }
 }

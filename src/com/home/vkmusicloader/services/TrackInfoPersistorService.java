@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
 import android.os.IBinder;
+import android.provider.BaseColumns;
 import android.widget.Toast;
 
 import com.home.vkmusicloader.data.VKDataOpenHelper;
@@ -35,15 +36,25 @@ public class TrackInfoPersistorService extends Service implements IUpdatesManage
 			public void onComplete(com.vk.sdk.api.VKResponse response) {
     			VKDataOpenHelper dbHelper = new VKDataOpenHelper(getApplicationContext());
     			SQLiteDatabase sdb = dbHelper.getWritableDatabase();
+    			ContentValues defaultTrackListValues = new ContentValues();
+    			defaultTrackListValues.put(BaseColumns._ID, VKDataOpenHelper.DEFAULTTRACKLIST_ID);
+    			defaultTrackListValues.put(VKDataOpenHelper.TRACKLIST_TABLE_TITLE_COLUMN, VKDataOpenHelper.DEFAULTTRACKLIST_TITLE);
+    			sdb.insert(VKDataOpenHelper.TRACKLIST_TABLE, null, defaultTrackListValues);
+    			int index = 0; 
         		for (VKApiAudioInfo vkTackInfo: (List<VKApiAudioInfo>)response.parsedModel)
         		{
         			ContentValues values = new ContentValues();
         			values.put(VKDataOpenHelper._ID, vkTackInfo.id);
-        			values.put(VKDataOpenHelper.ARTIST_COLUMN, vkTackInfo.artist);
-        			values.put(VKDataOpenHelper.DURATION_COLUMN, vkTackInfo.duration);
-        			values.put(VKDataOpenHelper.TITLE_COLUMN, vkTackInfo.title);
-        			values.put(VKDataOpenHelper.URL_COLUMN, vkTackInfo.url);
+        			values.put(VKDataOpenHelper.TRACK_TABLE_ARTIST_COLUMN, vkTackInfo.artist);
+        			values.put(VKDataOpenHelper.TRACK_TABLE_DURATION_COLUMN, vkTackInfo.duration);
+        			values.put(VKDataOpenHelper.TRACK_TABLE_TITLE_COLUMN, vkTackInfo.title);
+        			values.put(VKDataOpenHelper.TRACK_TABLE_URL_COLUMN, vkTackInfo.url);
         			sdb.insert(VKDataOpenHelper.TRACK_TABLE, null,  values);
+        			ContentValues defaultPlayListAssociation = new ContentValues();
+        			defaultPlayListAssociation.put(VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE_PLAYLISTID_COLUMN, 0);
+        			defaultPlayListAssociation.put(VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE_TRACKID_COLUMN, vkTackInfo.id);
+        			defaultPlayListAssociation.put(VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE_TRACKINDEX_COLUMN, index++);
+        			sdb.insert(VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE, null, defaultPlayListAssociation);
         		}
         		onTracksUpdated();
         		handler.post(updateCallback);

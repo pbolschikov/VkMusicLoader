@@ -18,6 +18,7 @@ public class TrackPlayerService extends Service implements IPlayer {
 	private int m_CurrentTrackId;
 	private boolean m_IsPlaing;
 	private IPlayerListener m_PlayerListener;
+	private int m_CurrentPlayListId = VKDataOpenHelper.DEFAULTTRACKLIST_ID;
 	
 	@Override 
 	public void onCreate() {
@@ -36,6 +37,13 @@ public class TrackPlayerService extends Service implements IPlayer {
 					}
 				});
 				return false;
+			}
+		});
+		m_Player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+			
+			@Override
+			public void onCompletion(MediaPlayer mp) {
+				playNext();
 			}
 		});
         m_Player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -71,7 +79,7 @@ public class TrackPlayerService extends Service implements IPlayer {
         SQLiteDatabase sdb = dbHelper.getReadableDatabase();
 		
 		Cursor tracksCursor = sdb.query(VKDataOpenHelper.TRACK_TABLE, 
-				new String[]{ VKDataOpenHelper.URL_COLUMN }, VKDataOpenHelper._ID +"=?", new String[]{Integer.toString(trackId)}, null, null, null);
+				new String[]{ VKDataOpenHelper.TRACK_TABLE_URL_COLUMN }, VKDataOpenHelper._ID +"=?", new String[]{Integer.toString(trackId)}, null, null, null);
 		if (!tracksCursor.moveToFirst())
 		{
 			return;
@@ -133,6 +141,31 @@ public class TrackPlayerService extends Service implements IPlayer {
 	@Override
 	public void setPlayerListener(IPlayerListener playerListener) {
 		m_PlayerListener = playerListener;
+	}
+
+	@Override
+	public void playNext() {
+		VKDataOpenHelper dbHelper = new VKDataOpenHelper(this);
+        SQLiteDatabase sdb = dbHelper.getReadableDatabase();
+        String playListId = Integer.toString(m_CurrentPlayListId);
+        Cursor cursor = m_CurrentTrackId != 0 
+        		? sdb.rawQuery(VKDataOpenHelper.NEXT_TRACK_SELECT, new String[]{ playListId, Integer.toString(m_CurrentTrackId), playListId})
+        		: sdb.rawQuery(VKDataOpenHelper.FIRST_TRACK_SELECT, new String[]{ playListId });
+		if (cursor.moveToFirst())
+		{
+			play(cursor.getInt(0));
+		}
+		else
+		{
+			stop();
+		}
+		cursor.close();
+	}
+
+	@Override
+	public void playPrevious() {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	
