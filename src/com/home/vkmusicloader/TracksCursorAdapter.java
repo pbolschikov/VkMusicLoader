@@ -4,6 +4,7 @@ import com.home.vkmusicloader.data.VKDataOpenHelper;
 import com.home.vkmusicloader.services.DownloadTrackService;
 import com.home.vkmusicloader.services.IPlayer;
 import com.home.vkmusicloader.services.IPlayerListener;
+import com.home.vkmusicloader.services.ITrackDownloader;
 import com.home.vkmusicloader.services.LocalBinder;
 import com.home.vkmusicloader.services.PlayerInfo;
 import com.home.vkmusicloader.services.TrackPlayerService;
@@ -72,15 +73,29 @@ public final class TracksCursorAdapter extends CursorAdapter {
         downloadButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(m_MainActivity, DownloadTrackService.class);
-				intent.putExtra(DownloadTrackService.ExtraName, trackId);
 				Toast.makeText(m_MainActivity, "Downloading track", Toast.LENGTH_SHORT).show();
-				m_MainActivity.startService(intent);
+				Intent trackPlayerService = new Intent(m_MainActivity, DownloadTrackService.class);
+				m_MainActivity.getApplicationContext().bindService(trackPlayerService, new ServiceConnection() {
+
+			        @Override
+			        public void onServiceConnected(ComponentName className,
+			                IBinder service) {
+			            // We've bound to LocalService, cast the IBinder and get LocalService instance
+			            @SuppressWarnings("unchecked")
+						LocalBinder<ITrackDownloader> binder = (LocalBinder<ITrackDownloader>) service;
+			            ITrackDownloader trackDownloader = binder.getService();
+			            trackDownloader.downloadTrack(trackId, null);
+			        }
+
+			        @Override
+			        public void onServiceDisconnected(ComponentName className) {
+			        }
+			    }, Context.BIND_AUTO_CREATE);
 			}
 		});
         playButton.setOnCheckedChangeListener(null);        
         playButton.setChecked(m_Player != null && m_Player.getCurrentTrack().isPlaing(trackId));
-playButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        playButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 			
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

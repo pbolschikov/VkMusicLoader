@@ -6,6 +6,7 @@ import android.app.Service;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.os.Handler;
 import android.os.IBinder;
 import android.provider.BaseColumns;
@@ -21,6 +22,18 @@ public class TrackInfoPersistorService extends Service implements IUpdatesManage
 	
 	private final Handler handler = new Handler();
 	private boolean m_NeedUpdate = true;
+	private final String INSERT_TRACK_QUERY = "INSERT OR REPLACE INTO " + VKDataOpenHelper.TRACK_TABLE + "(" +
+			VKDataOpenHelper._ID + "," +
+	VKDataOpenHelper.TRACK_TABLE_ARTIST_COLUMN + "," +
+	VKDataOpenHelper.TRACK_TABLE_DURATION_COLUMN + "," +
+	VKDataOpenHelper.TRACK_TABLE_TITLE_COLUMN + "," +
+	VKDataOpenHelper.TRACK_TABLE_URL_COLUMN + ")" + "VALUES (?,?,?,?,?)";
+	
+	private final String INSERT_TRACK_TO_TRACKLIST_QUERY = "INSERT OR REPLACE INTO " + VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE + "(" +
+			VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE_PLAYLISTID_COLUMN + "," +
+	VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE_TRACKID_COLUMN + "," +
+	VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE_TRACKINDEX_COLUMN + ")" + "VALUES (?,?,?)";
+	
 	
     public void checkUpdates(final Runnable updateCallback) {
     	if (!needUpdate())
@@ -35,27 +48,38 @@ public class TrackInfoPersistorService extends Service implements IUpdatesManage
         	@SuppressWarnings("unchecked")
 			public void onComplete(com.vk.sdk.api.VKResponse response) {
     			VKDataOpenHelper dbHelper = new VKDataOpenHelper(getApplicationContext());
-    			SQLiteDatabase sdb = dbHelper.getWritableDatabase();
-    			ContentValues defaultTrackListValues = new ContentValues();
-    			defaultTrackListValues.put(BaseColumns._ID, VKDataOpenHelper.DEFAULTTRACKLIST_ID);
-    			defaultTrackListValues.put(VKDataOpenHelper.TRACKLIST_TABLE_TITLE_COLUMN, VKDataOpenHelper.DEFAULTTRACKLIST_TITLE);
-    			sdb.insert(VKDataOpenHelper.TRACKLIST_TABLE, null, defaultTrackListValues);
-    			int index = 0; 
-        		for (VKApiAudioInfo vkTackInfo: (List<VKApiAudioInfo>)response.parsedModel)
-        		{
-        			ContentValues values = new ContentValues();
-        			values.put(VKDataOpenHelper._ID, vkTackInfo.id);
-        			values.put(VKDataOpenHelper.TRACK_TABLE_ARTIST_COLUMN, vkTackInfo.artist);
-        			values.put(VKDataOpenHelper.TRACK_TABLE_DURATION_COLUMN, vkTackInfo.duration);
-        			values.put(VKDataOpenHelper.TRACK_TABLE_TITLE_COLUMN, vkTackInfo.title);
-        			values.put(VKDataOpenHelper.TRACK_TABLE_URL_COLUMN, vkTackInfo.url);
-        			sdb.insert(VKDataOpenHelper.TRACK_TABLE, null,  values);
-        			ContentValues defaultPlayListAssociation = new ContentValues();
-        			defaultPlayListAssociation.put(VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE_PLAYLISTID_COLUMN, 0);
-        			defaultPlayListAssociation.put(VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE_TRACKID_COLUMN, vkTackInfo.id);
-        			defaultPlayListAssociation.put(VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE_TRACKINDEX_COLUMN, index++);
-        			sdb.insert(VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE, null, defaultPlayListAssociation);
-        		}
+    			final SQLiteDatabase sdb = dbHelper.getWritableDatabase();
+    			int index = 0;
+    			
+    		    final SQLiteStatement insertTrackStatement = sdb.compileStatement(INSERT_TRACK_QUERY);
+    		    final SQLiteStatement insertTrackToTrackListStatement = sdb.compileStatement(INSERT_TRACK_TO_TRACKLIST_QUERY);
+    		    sdb.beginTransaction();
+    		    try {
+    		    	ContentValues defaultTrackListValues = new ContentValues();
+        			defaultTrackListValues.put(BaseColumns._ID, VKDataOpenHelper.DEFAULTTRACKLIST_ID);
+        			defaultTrackListValues.put(VKDataOpenHelper.TRACKLIST_TABLE_TITLE_COLUMN, VKDataOpenHelper.DEFAULTTRACKLIST_TITLE);
+        			sdb.insert(VKDataOpenHelper.TRACKLIST_TABLE, null, defaultTrackListValues);
+    		    	for (VKApiAudioInfo vkTackInfo: (List<VKApiAudioInfo>)response.parsedModel)
+            		{
+            			insertTrackStatement.clearBindings();
+            			insertTrackStatement.bindLong(1, vkTackInfo.id);
+            			insertTrackStatement.bindString(2, vkTackInfo.artist);
+            			insertTrackStatement.bindLong(3, vkTackInfo.duration);
+            			insertTrackStatement.bindString(4, vkTackInfo.title);
+            			insertTrackStatement.bindString(5, vkTackInfo.url);
+            			insertTrackStatement.execute();
+            			
+            			insertTrackToTrackListStatement.clearBindings();
+            			insertTrackToTrackListStatement.bindLong(1, 0);
+            			insertTrackToTrackListStatement.bindLong(2,  vkTackInfo.id);
+            			insertTrackToTrackListStatement.bindLong(3, index++);
+            			insertTrackStatement.execute();
+            		}
+    		        sdb.setTransactionSuccessful();
+    		    }
+    		    finally {
+    		        sdb.endTransaction();
+    		    }
         		onTracksUpdated();
         		handler.post(updateCallback);
         	}
