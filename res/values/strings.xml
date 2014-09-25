@@ -9,4 +9,5 @@
 	<string name="continue_button">Continue</string>
 	<string name="my_audio">My Track List</string>
 	<string name="file_removed_error">File has been removed from device</string>
+	<string name="track_io_error">Tack can not be played, please check connection</string>
 </resources>

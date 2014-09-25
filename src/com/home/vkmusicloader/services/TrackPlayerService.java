@@ -1,5 +1,6 @@
 package com.home.vkmusicloader.services;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import com.google.common.base.Strings;
@@ -108,10 +109,17 @@ public class TrackPlayerService extends Service implements IPlayer {
 		} catch (IllegalStateException e) {
 			stop();
 			return;
-		} catch (IOException e) {
+		}
+		catch (FileNotFoundException e)
+		{
 			Toast.makeText(getApplicationContext(), getString(R.string.file_removed_error), Toast.LENGTH_SHORT).show();
-			stop();
 			//TODO update file location
+			stop();
+			return;
+		}
+		catch (IOException e) {
+			Toast.makeText(getApplicationContext(), getString(R.string.track_io_error), Toast.LENGTH_SHORT).show();
+			stop();
 			return;
 		}	
 		m_Player.prepareAsync();
