@@ -2,7 +2,10 @@ package com.home.vkmusicloader.services;
 
 import java.io.IOException;
 
+import com.google.common.base.Strings;
+import com.home.vkmusicloader.R;
 import com.home.vkmusicloader.data.VKDataOpenHelper;
+
 
 import android.app.Service;
 import android.content.Intent;
@@ -11,6 +14,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.IBinder;
+import android.widget.Toast;
 
 public class TrackPlayerService extends Service implements IPlayer {
 	private MediaPlayer m_Player;
@@ -43,7 +47,10 @@ public class TrackPlayerService extends Service implements IPlayer {
 			
 			@Override
 			public void onCompletion(MediaPlayer mp) {
-				playNext();
+				if (m_IsPlaing)
+				{
+					playNext();
+				}
 			}
 		});
         m_Player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -79,29 +86,32 @@ public class TrackPlayerService extends Service implements IPlayer {
         SQLiteDatabase sdb = dbHelper.getReadableDatabase();
 		
 		Cursor tracksCursor = sdb.query(VKDataOpenHelper.TRACK_TABLE, 
-				new String[]{ VKDataOpenHelper.TRACK_TABLE_URL_COLUMN }, VKDataOpenHelper._ID +"=?", new String[]{Integer.toString(trackId)}, null, null, null);
+				new String[]{ VKDataOpenHelper.TRACK_TABLE_URL_COLUMN, VKDataOpenHelper.TRACK_TABLE_LOCATION_COLUMN }, VKDataOpenHelper._ID +"=?", new String[]{Integer.toString(trackId)}, null, null, null);
 		if (!tracksCursor.moveToFirst())
 		{
 			return;
 		}
 		m_CurrentTrackId = trackId;
 		String url = tracksCursor.getString(0);
+		String localLocation = tracksCursor.getString(1);
 		tracksCursor.close();
 		m_Player.reset();
 		try {
-			m_Player.setDataSource(url);
+			m_Player.setDataSource(localLocation != null && localLocation.length() > 0 ? localLocation : url);
 			
 		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
+			stop();
 			return;
 		} catch (SecurityException e) {
-			e.printStackTrace();
+			stop();
 			return;
 		} catch (IllegalStateException e) {
-			e.printStackTrace();
+			stop();
 			return;
 		} catch (IOException e) {
-			e.printStackTrace();
+			Toast.makeText(getApplicationContext(), getString(R.string.file_removed_error), Toast.LENGTH_SHORT).show();
+			stop();
+			//TODO update file location
 			return;
 		}	
 		m_Player.prepareAsync();

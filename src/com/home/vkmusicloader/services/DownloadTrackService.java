@@ -90,21 +90,20 @@ public final class DownloadTrackService extends Service implements ITrackDownloa
 	    		    		 break;
 	    		    	 }
 	    		    	 fos.write(buffer, 0, bytesRead);
-	    		    	 builder.setContentText("Download completed")
-	    		            // Removes the progress bar
-	    		                    .setProgress(0,0,false);
 	    		     }
+    		    	 builder.setContentText("Download completed")
+	                    .setProgress(0,0,false).setSmallIcon(R.drawable.download_notification);
+
 	    		   }
 	    		   catch (Exception e) {
 	    			   m_Handler.post(new Runnable() {
 						
 						@Override
 						public void run() {
-							Toast.makeText(getApplicationContext(), "Error occured while downloading file", Toast.LENGTH_SHORT).show();
+							Toast.makeText(getApplicationContext(), "Error occured while downloading file ", Toast.LENGTH_SHORT).show();
 													}
 					});
 	    			   builder.setContentText("Error occured while downloading file")
-	    	            // Removes the progress bar
 	    	                    .setProgress(0,0,false).setSmallIcon(R.drawable.download_notification);
 	    		   }
 	    		   finally {
