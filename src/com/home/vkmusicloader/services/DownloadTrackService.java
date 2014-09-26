@@ -53,6 +53,11 @@ public final class DownloadTrackService extends Service implements ITrackDownloa
 	    			return;
 	    		}
 	    		File outputFile = new File(artistDirectory, title + ".mp3");
+	    		if (outputFile.isDirectory())
+	    		{
+	    			outputFile.delete();
+	    			outputFile = new File(artistDirectory, title + ".mp3");
+	    		}
 	    		try {
 	    			outputFile.createNewFile();
 	    		} catch (IOException e) {
