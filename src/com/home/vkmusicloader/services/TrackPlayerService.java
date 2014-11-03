@@ -34,7 +34,6 @@ public class TrackPlayerService extends Service implements IPlayer {
 	public void onCreate() {
 		m_Player = new MediaPlayer();
 		m_Player.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-			
 			@Override
 			public boolean onError(MediaPlayer mp, int what, int extra) {
 				m_IsPlaing = false;

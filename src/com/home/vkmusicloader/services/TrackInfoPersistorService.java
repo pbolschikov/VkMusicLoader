@@ -32,7 +32,7 @@ public class TrackInfoPersistorService extends Service implements IUpdatesManage
 	private final String INSERT_TRACK_TO_TRACKLIST_QUERY = "INSERT OR REPLACE INTO " + VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE + "(" +
 			VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE_PLAYLISTID_COLUMN + "," +
 	VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE_TRACKID_COLUMN + "," +
-	VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE_TRACKINDEX_COLUMN + ")" + "VALUES (?,?,?)";
+	VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE_TRACKINDEX_COLUMN + ")" + "VALUES (" + VKDataOpenHelper.DEFAULTTRACKLIST_ID + ",?,?)";
 	
 	
     public void checkUpdates(final Runnable updateCallback) {
@@ -70,10 +70,9 @@ public class TrackInfoPersistorService extends Service implements IUpdatesManage
             			insertTrackStatement.execute();
             			
             			insertTrackToTrackListStatement.clearBindings();
-            			insertTrackToTrackListStatement.bindLong(1, 0);
-            			insertTrackToTrackListStatement.bindLong(2,  vkTackInfo.id);
-            			insertTrackToTrackListStatement.bindLong(3, index++);
-            			insertTrackStatement.execute();
+            			insertTrackToTrackListStatement.bindLong(1,  vkTackInfo.id);
+            			insertTrackToTrackListStatement.bindLong(2, index++);
+            			insertTrackToTrackListStatement.execute();
             		}
     		        sdb.setTransactionSuccessful();
     		    }
