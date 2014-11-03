@@ -47,6 +47,14 @@
 <Button 
     android:layout_marginLeft="5dp"
     android:layout_centerVertical="true"
+    android:background="@drawable/button_remove"
+    android:layout_alignParentRight="true"
+    android:id="@+id/remove_button"
+    android:layout_width="30dp"
+    android:layout_height="60dp"/>
+<Button 
+    android:layout_marginLeft="5dp"
+    android:layout_centerVertical="true"
     android:background="@drawable/button_download"
     android:layout_alignParentRight="true"
     android:id="@+id/download_button"

@@ -3,16 +3,20 @@ package com.home.vkmusicloader.services;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import com.google.common.base.Strings;
 import com.home.vkmusicloader.R;
 import com.home.vkmusicloader.data.VKDataOpenHelper;
 
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.media.MediaPlayer;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.IBinder;
 import android.widget.Toast;
@@ -24,6 +28,7 @@ public class TrackPlayerService extends Service implements IPlayer {
 	private boolean m_IsPlaing;
 	private IPlayerListener m_PlayerListener;
 	private int m_CurrentPlayListId = VKDataOpenHelper.DEFAULTTRACKLIST_ID;
+	private boolean m_CanPlayRemote;
 	
 	@Override 
 	public void onCreate() {
@@ -34,13 +39,7 @@ public class TrackPlayerService extends Service implements IPlayer {
 			public boolean onError(MediaPlayer mp, int what, int extra) {
 				m_IsPlaing = false;
 				m_CurrentTrackId = 0;
-				m_Handler.post(new Runnable() {
-					
-					@Override
-					public void run() {
-						raiseStateChanged();
-					}
-				});
+				raiseStateChangedFromSeparateThread();
 				return false;
 			}
 		});
@@ -52,6 +51,7 @@ public class TrackPlayerService extends Service implements IPlayer {
 				{
 					playNext();
 				}
+				raiseStateChangedFromSeparateThread();
 			}
 		});
         m_Player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -59,13 +59,29 @@ public class TrackPlayerService extends Service implements IPlayer {
 			@Override
 			public void onPrepared(MediaPlayer mp) {
 				mp.start();
-							}
+			}
 		});
-	};
+        
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);           
+        registerReceiver(new BroadcastReceiver()
+		{
+		  @Override
+		  public void onReceive( Context context, Intent intent )
+		  {
+		    ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService( Context.CONNECTIVITY_SERVICE );
+		    NetworkInfo activeNetInfo = connectivityManager.getActiveNetworkInfo();
+		    m_CanPlayRemote = activeNetInfo != null;
+		    raiseStateChangedFromSeparateThread();
+		  }
+		}
+		, filter);
+	}
 	
-	@Override public int onStartCommand(Intent intent, int flags, int startId) {
+	@Override 
+	public int onStartCommand(Intent intent, int flags, int startId) {
 		return START_STICKY;
-	};
+	}
 	
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -86,10 +102,12 @@ public class TrackPlayerService extends Service implements IPlayer {
 		VKDataOpenHelper dbHelper = new VKDataOpenHelper(this);
         SQLiteDatabase sdb = dbHelper.getReadableDatabase();
 		
+        
 		Cursor tracksCursor = sdb.query(VKDataOpenHelper.TRACK_TABLE, 
 				new String[]{ VKDataOpenHelper.TRACK_TABLE_URL_COLUMN, VKDataOpenHelper.TRACK_TABLE_LOCATION_COLUMN }, VKDataOpenHelper._ID +"=?", new String[]{Integer.toString(trackId)}, null, null, null);
 		if (!tracksCursor.moveToFirst())
 		{
+			tracksCursor.close();
 			return;
 		}
 		m_CurrentTrackId = trackId;
@@ -143,6 +161,20 @@ public class TrackPlayerService extends Service implements IPlayer {
 		raiseStateChanged();
 	}
 	
+	private void raiseStateChangedFromSeparateThread()
+	{
+		if (m_PlayerListener != null)
+		{
+			m_Handler.post(new Runnable() {
+				
+				@Override
+				public void run() {
+					raiseStateChanged();
+				}
+			});	
+		}
+	}
+	
 	private void raiseStateChanged()
 	{
 		if (m_PlayerListener != null)
@@ -185,6 +217,20 @@ public class TrackPlayerService extends Service implements IPlayer {
 		// TODO Auto-generated method stub
 		
 	}
-	
-	
+
+	@Override
+	public boolean canPlay(int trackId) {
+		VKDataOpenHelper dbHelper = new VKDataOpenHelper(this);
+        SQLiteDatabase sdb = dbHelper.getReadableDatabase();
+		
+		Cursor tracksCursor = sdb.query(VKDataOpenHelper.TRACK_TABLE, 
+				new String[]{ VKDataOpenHelper.TRACK_TABLE_LOCATION_COLUMN }, VKDataOpenHelper._ID +"=? AND " + VKDataOpenHelper.TRACK_TABLE_LOCATION_COLUMN + " NOT NULL", new String[]{Integer.toString(trackId)}, null, null, null);
+		try
+		{
+		return m_CanPlayRemote || tracksCursor.moveToFirst();
+		}
+		finally{
+			tracksCursor.close();
+			}
+	}
 }

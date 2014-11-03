@@ -7,5 +7,6 @@ public interface IPlayer {
 	void pause();
 	void stop();
 	void setPlayerListener(IPlayerListener playerListener);
+	boolean canPlay(int trackId);
 	PlayerInfo getCurrentTrack();
 }

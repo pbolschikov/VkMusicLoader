@@ -12,6 +12,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.widget.ListView;
+
 import com.home.vkmusicloader.data.VKDataOpenHelper;
 import com.home.vkmusicloader.services.IUpdatesManager;
 import com.home.vkmusicloader.services.LocalBinder;
@@ -54,7 +55,7 @@ public final class MainActivity extends RoboActivity
 	    }, Context.BIND_AUTO_CREATE);
 
         m_TracksAdapter = new TracksCursorAdapter(this, createCursor());
-		m_TrackListView.setAdapter(m_TracksAdapter);
+        m_TrackListView.setAdapter(m_TracksAdapter);
     }
     
     private Cursor createCursor()
