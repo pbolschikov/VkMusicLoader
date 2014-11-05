@@ -40,7 +40,6 @@ public final class MainActivity extends RoboActivity
 				LocalBinder<IUpdatesManager> binder = (LocalBinder<IUpdatesManager>) service;
 	            IUpdatesManager updatesManager = binder.getService();
 	            updatesManager.checkUpdates(new Runnable() {
-					
 					@Override
 					public void run() {
 						m_TracksAdapter.swapCursor(createCursor());

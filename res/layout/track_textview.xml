@@ -60,4 +60,14 @@
     android:id="@+id/download_button"
     android:layout_width="30dp"
     android:layout_height="60dp"/>
+ <ProgressBar
+     	 android:id="@+id/download_progressbar"
+         android:layout_width="30dp"
+    	 android:layout_height="60dp"
+    	 style="@android:style/Widget.ProgressBar.Small"
+         android:layout_marginLeft="5dp"
+         android:layout_marginRight="5dp"
+         android:layout_centerVertical="true"
+    	 android:layout_alignParentRight="true"
+     />
 </RelativeLayout>

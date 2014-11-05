@@ -132,6 +132,7 @@ public final class TracksCursorAdapter extends CursorAdapter {
         final ToggleButton playButton = (ToggleButton)trackView.findViewById(R.id.play_button);
         final View downloadButton = trackView.findViewById(R.id.download_button);
         final View removeButton = trackView.findViewById(R.id.remove_button);
+        final View downloadProgressBar = trackView.findViewById(R.id.download_progressbar);
         final int trackId = cursor.getInt(cursor.getColumnIndex(VKDataOpenHelper._ID));
         trackView.setOnClickListener(new OnClickListener() {
 			
@@ -144,6 +145,12 @@ public final class TracksCursorAdapter extends CursorAdapter {
 			@Override
 			public void onClick(View v) {
 				m_TrackDownloader.downloadTrack(trackId, new Runnable(){
+					@Override
+					public void run() {
+						notifyDataSetChanged();
+					}	
+				},
+				new Runnable(){
 					@Override
 					public void run() {
 						notifyDataSetChanged();
@@ -163,13 +170,14 @@ public final class TracksCursorAdapter extends CursorAdapter {
 						Toast.makeText(m_MainActivity, "Track has been successfully removed", Toast.LENGTH_SHORT).show();
 					}	
 				});
-				
 			}
 		});
-        downloadButton.setVisibility(m_TrackDownloader != null && m_NetworkStateProvider.isOnline() && !m_TrackDownloader.isDownloaded(trackId)  ? View.VISIBLE : View.INVISIBLE);
-        removeButton.setVisibility(m_TrackDownloader != null && m_TrackDownloader.isDownloaded(trackId)  ? View.VISIBLE : View.INVISIBLE);
+        
+        downloadProgressBar.setVisibility(m_TrackDownloader != null && m_NetworkStateProvider.isOnline() && m_TrackDownloader.getTrackState(trackId) == VKDataOpenHelper.TRACK_UPLOAD_TABLE_STATE_COLUMN_UPLOADING  ? View.VISIBLE : View.INVISIBLE);
+        downloadButton.setVisibility(m_TrackDownloader != null && m_NetworkStateProvider.isOnline() && m_TrackDownloader.getTrackState(trackId) == VKDataOpenHelper.TRACK_UPLOAD_TABLE_STATE_COLUMN_NEW  ? View.VISIBLE : View.INVISIBLE);
+        removeButton.setVisibility(m_TrackDownloader != null && m_TrackDownloader.getTrackState(trackId) == VKDataOpenHelper.TRACK_UPLOAD_TABLE_STATE_COLUMN_UPLOADED ? View.VISIBLE : View.INVISIBLE);
         playButton.setVisibility(m_Player != null && m_Player.canPlay(trackId) ? View.VISIBLE : View.INVISIBLE);
-        playButton.setOnCheckedChangeListener(null);        
+        playButton.setOnCheckedChangeListener(null);
         playButton.setChecked(m_Player != null && m_Player.getCurrentTrack().isPlaing(trackId));
         playButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 			@Override

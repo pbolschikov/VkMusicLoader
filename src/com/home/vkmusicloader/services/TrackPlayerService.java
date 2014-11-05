@@ -103,19 +103,18 @@ public class TrackPlayerService extends Service implements IPlayer {
 		
         
 		Cursor tracksCursor = sdb.query(VKDataOpenHelper.TRACK_TABLE, 
-				new String[]{ VKDataOpenHelper.TRACK_TABLE_URL_COLUMN, VKDataOpenHelper.TRACK_TABLE_LOCATION_COLUMN }, VKDataOpenHelper._ID +"=?", new String[]{Integer.toString(trackId)}, null, null, null);
-		if (!tracksCursor.moveToFirst())
-		{
-			tracksCursor.close();
-			return;
-		}
-		m_CurrentTrackId = trackId;
-		String url = tracksCursor.getString(0);
-		String localLocation = tracksCursor.getString(1);
-		tracksCursor.close();
-		m_Player.reset();
+				new String[]{ VKDataOpenHelper.TRACK_TABLE_URL_COLUMN }, VKDataOpenHelper._ID +"=?", new String[]{Integer.toString(trackId)}, null, null, null);
+		Cursor locationCursor = sdb.query(VKDataOpenHelper.TRACK_UPLOAD_TABLE, 
+				new String[]{ VKDataOpenHelper.TRACK_UPLOAD_TABLE_LOCATION_COLUMN }, VKDataOpenHelper._ID +"=? AND " + VKDataOpenHelper.TRACK_UPLOAD_TABLE_STATE_COLUMN + "=" + VKDataOpenHelper.TRACK_UPLOAD_TABLE_STATE_COLUMN_UPLOADED, new String[]{Integer.toString(trackId)}, null, null, null);
+		
 		try {
-			m_Player.setDataSource(localLocation != null && localLocation.length() > 0 ? localLocation : url);
+			if (!tracksCursor.moveToFirst())
+			{
+				return;
+			}
+			m_CurrentTrackId = trackId;
+			m_Player.reset();
+			m_Player.setDataSource(locationCursor.moveToFirst() ? locationCursor.getString(0) : tracksCursor.getString(0));
 			
 		} catch (IllegalArgumentException e) {
 			stop();
@@ -138,7 +137,11 @@ public class TrackPlayerService extends Service implements IPlayer {
 			Toast.makeText(getApplicationContext(), getString(R.string.track_io_error), Toast.LENGTH_SHORT).show();
 			stop();
 			return;
-		}	
+		}
+		finally{
+			tracksCursor.close();
+			locationCursor.close();
+		}
 		m_Player.prepareAsync();
 		}
 		m_IsPlaing = true;
@@ -219,17 +222,20 @@ public class TrackPlayerService extends Service implements IPlayer {
 
 	@Override
 	public boolean canPlay(int trackId) {
+		return m_CanPlayRemote || isUploaded(trackId);
+	}
+
+	private boolean isUploaded(int trackId) {
 		VKDataOpenHelper dbHelper = new VKDataOpenHelper(this);
         SQLiteDatabase sdb = dbHelper.getReadableDatabase();
-		
-		Cursor tracksCursor = sdb.query(VKDataOpenHelper.TRACK_TABLE, 
-				new String[]{ VKDataOpenHelper.TRACK_TABLE_LOCATION_COLUMN }, VKDataOpenHelper._ID +"=? AND " + VKDataOpenHelper.TRACK_TABLE_LOCATION_COLUMN + " NOT NULL", new String[]{Integer.toString(trackId)}, null, null, null);
+		Cursor uploadCursor = sdb.query(VKDataOpenHelper.TRACK_UPLOAD_TABLE, 
+				new String[]{ VKDataOpenHelper.TRACK_UPLOAD_TABLE_LOCATION_COLUMN }, VKDataOpenHelper._ID +"=? AND " + VKDataOpenHelper.TRACK_UPLOAD_TABLE_LOCATION_COLUMN + "=" + VKDataOpenHelper.TRACK_UPLOAD_TABLE_STATE_COLUMN_UPLOADED, new String[]{Integer.toString(trackId)}, null, null, null);
 		try
 		{
-		return m_CanPlayRemote || tracksCursor.moveToFirst();
+		return uploadCursor.moveToFirst();
 		}
 		finally{
-			tracksCursor.close();
+			uploadCursor.close();
 			}
 	}
 }

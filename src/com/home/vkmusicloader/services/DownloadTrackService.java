@@ -29,8 +29,9 @@ import com.home.vkmusicloader.data.VKDataOpenHelper;
 public final class DownloadTrackService extends Service implements ITrackDownloader {
 	private final Handler m_Handler = new Handler();
 	
+	
 	@Override
-	public void downloadTrack(final int trackId, final Runnable downloadedCallback) {
+	public void downloadTrack(final int trackId, final Runnable downloadingCallback, final Runnable downloadedCallback) {
 		//TODO implement wi-fi lock
 		//TODO check if media mounted http://developer.android.com/training/basics/data-storage/files.html
 		new Thread(new Runnable() {
@@ -61,6 +62,14 @@ public final class DownloadTrackService extends Service implements ITrackDownloa
 	    		} catch (IOException e) {
 	    			return;
 	    		}
+	    		ContentValues values = new ContentValues();
+	    		values.put(VKDataOpenHelper._ID, trackId);
+	    		values.put(VKDataOpenHelper.TRACK_UPLOAD_TABLE_LOCATION_COLUMN, outputFile.getAbsolutePath());
+	    		values.put(VKDataOpenHelper.TRACK_UPLOAD_TABLE_STATE_COLUMN, VKDataOpenHelper.TRACK_UPLOAD_TABLE_STATE_COLUMN_UPLOADING);
+	    		SQLiteDatabase writableDatabase = dbHelper.getWritableDatabase();
+	    		writableDatabase.insert(VKDataOpenHelper.TRACK_UPLOAD_TABLE, null, values);
+	    		writableDatabase.close();
+	    		m_Handler.post(downloadingCallback);
 	    		
 	    		NotificationManager notifyManager =
 	    		        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -118,11 +127,11 @@ public final class DownloadTrackService extends Service implements ITrackDownloa
 	    		    }
 	    		    notifyManager.notify(trackId, builder.build());
 	    		}
-	    		ContentValues values = new ContentValues();
-	    		values.put(VKDataOpenHelper.TRACK_TABLE_LOCATION_COLUMN, outputFile.getAbsolutePath());
-	    		
-	    		SQLiteDatabase writableDatabase = dbHelper.getWritableDatabase();
-	    		writableDatabase.update(VKDataOpenHelper.TRACK_TABLE, values, VKDataOpenHelper._ID + "=?",new String[]{ Integer.toString(trackId)});
+	    		values = new ContentValues();
+	    		values.put(VKDataOpenHelper.TRACK_UPLOAD_TABLE_LOCATION_COLUMN, outputFile.getAbsolutePath());
+	    		values.put(VKDataOpenHelper.TRACK_UPLOAD_TABLE_STATE_COLUMN, VKDataOpenHelper.TRACK_UPLOAD_TABLE_STATE_COLUMN_UPLOADED);
+	    		writableDatabase = dbHelper.getWritableDatabase();
+	    		writableDatabase.update(VKDataOpenHelper.TRACK_UPLOAD_TABLE, values,BaseColumns._ID + "=?", new String[]{Integer.toString(trackId)});
 	    		writableDatabase.close();
 	    		m_Handler.post(downloadedCallback);
 	        }
@@ -135,28 +144,31 @@ public final class DownloadTrackService extends Service implements ITrackDownloa
 	        public void run() {
 	        	VKDataOpenHelper dbHelper = new VKDataOpenHelper(DownloadTrackService.this);
 	            SQLiteDatabase sdb = dbHelper.getReadableDatabase();
-	    		Cursor cursor = sdb.query(VKDataOpenHelper.TRACK_TABLE, new String[]{VKDataOpenHelper.TRACK_TABLE_LOCATION_COLUMN, VKDataOpenHelper.TRACK_TABLE_ARTIST_COLUMN, VKDataOpenHelper.TRACK_TABLE_TITLE_COLUMN},BaseColumns._ID + "=?", new String[]{Integer.toString(trackId)},null,null,null);
+	    		Cursor cursor = sdb.query(VKDataOpenHelper.TRACK_UPLOAD_TABLE, new String[]{VKDataOpenHelper.TRACK_UPLOAD_TABLE_LOCATION_COLUMN},BaseColumns._ID + "=?", new String[]{Integer.toString(trackId)},null,null,null);
 	    		cursor.moveToFirst();
 	    		String filePath = cursor.getString(0);
-	    		String artist = cursor.getString(1);
-	    		String title = cursor.getString(2);
 	    		cursor.close();
 	    		File trackFile = new File(filePath);
 	    		if (trackFile.exists())
 	    		{
 	    			trackFile.delete();
 	    		}
+	    		SQLiteDatabase writableDatabase = dbHelper.getWritableDatabase();
+	    		writableDatabase.delete(VKDataOpenHelper.TRACK_UPLOAD_TABLE, VKDataOpenHelper._ID + "=?",new String[]{ Integer.toString(trackId)});
+	    		writableDatabase.close();
+	    		
+	    		sdb = dbHelper.getReadableDatabase();
+	    		cursor = sdb.query(VKDataOpenHelper.TRACK_TABLE, new String[]{VKDataOpenHelper.TRACK_TABLE_TITLE_COLUMN, VKDataOpenHelper.TRACK_TABLE_ARTIST_COLUMN},BaseColumns._ID + "=?", new String[]{Integer.toString(trackId)},null,null,null);
+	    		cursor.moveToFirst();
+	    		String title = cursor.getString(0);
+	    		String artist = cursor.getString(1);
+	    		cursor.close();
 	    		NotificationManager notifyManager =
 	    		        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 	    		NotificationCompat.Builder builder = new NotificationCompat.Builder(DownloadTrackService.this);
 	    		builder.setContentTitle(String.format("%s - %s", artist, title))
     		    .setContentText("Track successfully removed").setSmallIcon(R.drawable.download_notification);
 	    		notifyManager.notify(trackId, builder.build());
-	    		ContentValues values = new ContentValues();
-	    		values.put(VKDataOpenHelper.TRACK_TABLE_LOCATION_COLUMN, (String)null);
-	    		SQLiteDatabase writableDatabase = dbHelper.getWritableDatabase();
-	    		writableDatabase.update(VKDataOpenHelper.TRACK_TABLE, values, VKDataOpenHelper._ID + "=?",new String[]{ Integer.toString(trackId)});
-	    		writableDatabase.close();
 	    		m_Handler.post(removedCallback);
 	        }
 	    }).start();
@@ -180,10 +192,17 @@ public final class DownloadTrackService extends Service implements ITrackDownloa
 	}
 
 	@Override
-	public boolean isDownloaded(int trackId) {
+	public int getTrackState(int trackId) {
 		VKDataOpenHelper dbHelper = new VKDataOpenHelper(DownloadTrackService.this);
         SQLiteDatabase sdb = dbHelper.getReadableDatabase();
-		Cursor cursor = sdb.query(VKDataOpenHelper.TRACK_TABLE, new String[]{VKDataOpenHelper.TRACK_TABLE_LOCATION_COLUMN},BaseColumns._ID + "=? AND " + VKDataOpenHelper.TRACK_TABLE_LOCATION_COLUMN + " IS NOT NULL" , new String[]{Integer.toString(trackId)},null,null,null);
-		return cursor.moveToFirst();
+		Cursor cursor = sdb.query(VKDataOpenHelper.TRACK_UPLOAD_TABLE, new String[]{VKDataOpenHelper.TRACK_UPLOAD_TABLE_STATE_COLUMN},BaseColumns._ID + "=?", new String[]{Integer.toString(trackId)},null,null,null);
+		try
+		{
+		return cursor.moveToFirst() ? cursor.getInt(0) : VKDataOpenHelper.TRACK_UPLOAD_TABLE_STATE_COLUMN_NEW;
+		}
+		finally
+		{
+			cursor.close();
+			}
 	}
 }
