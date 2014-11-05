@@ -198,6 +198,7 @@ public final class TracksCursorAdapter extends CursorAdapter {
 		});
         
         title.setSingleLine(!isTrackSelected(trackId));
+        trackView.setBackgroundColor(m_MainActivity.getResources().getColor(isTrackSelected(trackId) ? R.color.track_selected : R.color.track_default));
         setColor(title, isPalyingOrPaused(trackId));
         setColor(artist, isPalyingOrPaused(trackId));
         title.setText(cursor.getString(1));
