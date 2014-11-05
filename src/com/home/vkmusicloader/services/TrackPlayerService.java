@@ -217,7 +217,6 @@ public class TrackPlayerService extends Service implements IPlayer {
 	@Override
 	public void playPrevious() {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -229,13 +228,13 @@ public class TrackPlayerService extends Service implements IPlayer {
 		VKDataOpenHelper dbHelper = new VKDataOpenHelper(this);
         SQLiteDatabase sdb = dbHelper.getReadableDatabase();
 		Cursor uploadCursor = sdb.query(VKDataOpenHelper.TRACK_UPLOAD_TABLE, 
-				new String[]{ VKDataOpenHelper.TRACK_UPLOAD_TABLE_LOCATION_COLUMN }, VKDataOpenHelper._ID +"=? AND " + VKDataOpenHelper.TRACK_UPLOAD_TABLE_LOCATION_COLUMN + "=" + VKDataOpenHelper.TRACK_UPLOAD_TABLE_STATE_COLUMN_UPLOADED, new String[]{Integer.toString(trackId)}, null, null, null);
+				new String[]{ VKDataOpenHelper.TRACK_UPLOAD_TABLE_LOCATION_COLUMN }, VKDataOpenHelper._ID +"=? AND " + VKDataOpenHelper.TRACK_UPLOAD_TABLE_STATE_COLUMN + "=" + VKDataOpenHelper.TRACK_UPLOAD_TABLE_STATE_COLUMN_UPLOADED, new String[]{Integer.toString(trackId)}, null, null, null);
 		try
 		{
 		return uploadCursor.moveToFirst();
 		}
 		finally{
 			uploadCursor.close();
-			}
+		}
 	}
 }
