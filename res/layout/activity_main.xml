@@ -4,22 +4,10 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".MainActivity" >
-        <TextView
-            android:background="@drawable/name_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/my_audio"
-            android:gravity="center"
-            android:textSize="25sp"
-            android:textColor="@color/vk_white">
-    </TextView>	
     <ListView
-        android:layout_marginTop="10dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/track_list"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
         android:dividerHeight="4.0sp">        
     </ListView>	
 </LinearLayout>
