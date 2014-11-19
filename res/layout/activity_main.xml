@@ -4,6 +4,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".MainActivity" >
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/trackname_textview"
+        android:inputType="text"
+        
+        />
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

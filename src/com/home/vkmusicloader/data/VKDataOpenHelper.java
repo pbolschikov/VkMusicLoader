@@ -51,7 +51,7 @@ public class VKDataOpenHelper extends SQLiteOpenHelper implements BaseColumns {
 	public static final String TRACKLIST_SELECT = "SELECT " +BaseColumns._ID + "," + VKDataOpenHelper.TRACK_TABLE_TITLE_COLUMN +"," + VKDataOpenHelper.TRACK_TABLE_ARTIST_COLUMN + " FROM "+
 			VKDataOpenHelper.TRACK_TABLE + " track INNER JOIN "+ VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE + " trackToTrackList ON track."+BaseColumns._ID + " =trackToTrackList."+VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE_TRACKID_COLUMN + " WHERE trackToTrackList."+VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE_PLAYLISTID_COLUMN+
 			"=? ORDER BY trackToTrackList." + VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE_TRACKINDEX_COLUMN;
-	
+
 	public static final String NEXT_TRACK_SELECT = "SELECT " + BaseColumns._ID + " FROM "+
 			VKDataOpenHelper.TRACK_TABLE + " track INNER JOIN "+ VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE + " trackToTrackList ON track."+BaseColumns._ID + " = trackToTrackList."+VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE_TRACKID_COLUMN + " WHERE trackToTrackList."+VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE_PLAYLISTID_COLUMN+
 			"=? AND trackToTrackList."+TRACK_TO_TRACKLIST_TABLE_TRACKINDEX_COLUMN +">(SELECT " + TRACK_TO_TRACKLIST_TABLE_TRACKINDEX_COLUMN + " FROM " + TRACK_TO_TRACKLIST_TABLE +" WHERE " + TRACK_TO_TRACKLIST_TABLE_TRACKID_COLUMN + "=? AND "+ VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE_PLAYLISTID_COLUMN +"=?) ORDER BY trackToTrackList." + VKDataOpenHelper.TRACK_TO_TRACKLIST_TABLE_TRACKINDEX_COLUMN + " ASC LIMIT 1";

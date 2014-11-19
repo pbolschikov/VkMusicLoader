@@ -11,7 +11,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.view.KeyEvent;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.home.vkmusicloader.data.VKDataOpenHelper;
 import com.home.vkmusicloader.services.IUpdatesManager;
@@ -23,6 +26,8 @@ public final class MainActivity extends RoboActivity
 {
 	@InjectView(R.id.track_list)
 	ListView m_TrackListView;
+	@InjectView(R.id.trackname_textview)
+	EditText m_TextView;
 	TracksCursorAdapter m_TracksAdapter;
 	
     @Override
@@ -30,6 +35,13 @@ public final class MainActivity extends RoboActivity
         super.onCreate(savedInstanceState);
         
 		Intent trackPlayerService = new Intent(this, TrackInfoPersistorService.class);
+		m_TextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+		    @Override
+		    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+		    	String term = v.getText().toString();
+		        return true;
+		    }
+		});
 	 	getApplicationContext().bindService(trackPlayerService, new ServiceConnection() {
 
 	        @Override
@@ -42,7 +54,7 @@ public final class MainActivity extends RoboActivity
 	            updatesManager.checkUpdates(new Runnable() {
 					@Override
 					public void run() {
-						m_TracksAdapter.swapCursor(createCursor());
+						m_TracksAdapter.swapCursor(createCursor(""));
 					}
 				});
 	        }
@@ -53,14 +65,15 @@ public final class MainActivity extends RoboActivity
 	        }
 	    }, Context.BIND_AUTO_CREATE);
 
-        m_TracksAdapter = new TracksCursorAdapter(this, createCursor());
+        m_TracksAdapter = new TracksCursorAdapter(this, createCursor(null));
         m_TrackListView.setAdapter(m_TracksAdapter);
     }
     
-    private Cursor createCursor()
+    private Cursor createCursor(String term)
     {
     	VKDataOpenHelper dbHelper = new VKDataOpenHelper(this);
         SQLiteDatabase sdb = dbHelper.getReadableDatabase();
+        
         return sdb.rawQuery(VKDataOpenHelper.TRACKLIST_SELECT, new String[]{ Integer.toString(VKDataOpenHelper.DEFAULTTRACKLIST_ID) });
     }
 }
